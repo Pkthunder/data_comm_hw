@@ -1,6 +1,7 @@
 import socket # module for all socket calls
 import sys # module used for "argv" functionality
 import re # regex module for input validation
+from os import path # helper module for modifying path and file names
 
 	
 def fromTerminal():
@@ -45,9 +46,13 @@ def runClient(dest, port, gp, file):
 	"""
 
 	CRLF = "\r\n\r\n"
-	#dest, port_num = sys.argv[1], sys.argv[2]
+	# dest, port_num = sys.argv[1], sys.argv[2]
 	# tuple containing GET|PUT and file_name
-	params = (gp, file)
+	# path.basename returns the file name of a path
+	params = (gp, file) # default value
+	if gp == "PUT" and file != "/":
+		# PUT requests only need the file name
+		params = (gp, path.basename(file))
 
 	# Real HTTP-1.0 ASCII-based request string
 	# example: GET /path/to/file/index.html HTTP/1.0
@@ -73,6 +78,47 @@ def runClient(dest, port, gp, file):
 	print "Sending request %s" % request
 	s.sendall(request)
 
+	# run GET or PUT specific code
+	if gp == "GET":
+		pass
+
+	elif gp == "PUT":
+		# receive "ACK" from server before sending file
+		put_response = s.recv(1024)
+
+		# on Successful "ACK" message
+		if put_response == "Connection established. Send file":
+
+			# open the file to send to server via file stream
+			with open(file, "r") as f:
+
+				# read in the file until EOF
+				# load initial segment of file
+				# then loop until EOF is reached
+				raw_data = f.read(1024)
+				while raw_data:
+					# send the file data to the server
+					# as the client reads in the file
+					print "Sending data..."
+					s.send(raw_data)
+					raw_data = f.read(1024)
+
+			# sends EOF to the server
+			s.shutdown(socket.SHUT_WR)
+			print "File was sent"
+
+		else:
+			print "Connection was broken"
+			s.shutdown(1)
+			s.close()
+			return
+
+	else:
+		print "Error - Bad HTTP Verb"
+		s.shutdown(1)
+		s.close()
+		return
+
 	# receives response, string buffer size should be a low
 	# power of 2 for best results
 	response = s.recv(8192)
@@ -80,7 +126,7 @@ def runClient(dest, port, gp, file):
 
 	# shutdown TCP 
 	print "Closing the connection...\n"
-	s.shutdown(1)
+	#s.shutdown(1)
 	s.close()
 
 	print "\t**Reponse**\n"

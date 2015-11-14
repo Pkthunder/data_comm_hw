@@ -49,11 +49,19 @@ p2 = Process(target=runTest,
 p3 = Process(target=runTest,
 	args=("python myclient.py 127.0.1.1 8888 GET / >> log/client_test.log", 3))
 
-p1.start()
+p4 = Process(target=runTest,
+	args=("python myclient.py 127.0.1.1 8888 PUT temp.txt >> log/client_test.log", 4))
+
+p1.start() # www.google 80 GET /
 sleep(1.5)
-p2.start()
+p2.start() # run server on port 8888
 sleep(1.5)
-p3.start()
+p3.start() # 127.0.1.1 8888 GET /
+sleep(1.5)
+p4.start() # 127.0.1.1 8888 PUT temp.txt
 p1.join()
 p2.join(5.0)
 p3.join()
+p4.join()
+# sleep(3.0)
+# p2.terminate()
