@@ -73,7 +73,9 @@ def runServer(port):
 		# removes a leading "/" if it exists
 		start = 4
 		end = request.find("HTTP")-1
-		if request[4] == "/":
+		# only removes "/" if a word exists after
+		# "/" results in "/" and "/abc" results in "abc"
+		if request[4] == "/" and request[5] != " ":
 			start = 5
 		# a slice of the request equal to the file's name
 		file_name = request[start:end]
@@ -141,6 +143,6 @@ Hello World!
 
 		# prevents continuous loop
 		# breaks loop after first request
-		listening = False
+		#listening = False
 
 fromTerminal()

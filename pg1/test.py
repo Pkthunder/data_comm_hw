@@ -59,9 +59,23 @@ sleep(1.5)
 p3.start() # 127.0.1.1 8888 GET /
 sleep(1.5)
 p4.start() # 127.0.1.1 8888 PUT temp.txt
+
+# join all processes to main thread
 p1.join()
 p2.join(5.0)
 p3.join()
 p4.join()
-# sleep(3.0)
-# p2.terminate()
+
+# terminate test 2, which runs the server in a infinite loop
+sleep(1.5)
+p2.terminate()
+print p2.is_alive()
+print p2.exitcode
+sleep(1.0)
+p2.terminate()
+print p2.is_alive()
+print p2.exitcode
+# while p2.is_alive():
+# 	print p2.is_alive()
+# 	p2.terminate()
+# 	p2.exitcode
