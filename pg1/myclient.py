@@ -10,6 +10,11 @@ def fromTerminal():
 	line arguments to the client function
 	"""
 
+	# default values (for testing)
+	if len(sys.argv) == 2 and sys.argv[1] == "default":
+		runClient("127.0.1.1", "8888", "GET", "/")
+		return
+
 	# list of regex to validate input
 	valid_regex = [
 		re.compile(r'^[a-zA-Z0-9.//_-]{4,}$'),	# host
@@ -19,7 +24,7 @@ def fromTerminal():
 	]
 
 	# example of how to call this script
-	example_call = "python myclient.py www.google.com 80 GET /"
+	example_call = "Example:\tpython myclient.py www.google.com 80 GET /"
 
 	try:
 		# Checks all inputs are entered (4 args and myclient.py itself)
@@ -78,9 +83,17 @@ def runClient(dest, port, gp, file):
 	print "Sending request %s" % request
 	s.sendall(request)
 
+	# response from the server
+	response = ""
+
 	# run GET or PUT specific code
 	if gp == "GET":
-		pass
+
+		temp = s.recv(1024)
+		while temp:
+			response += temp
+			temp = s.recv(1024)
+		print "Response received"
 
 	elif gp == "PUT":
 		# receive "ACK" from server before sending file
@@ -91,7 +104,6 @@ def runClient(dest, port, gp, file):
 
 			# open the file to send to server via file stream
 			with open(file, "r") as f:
-
 				# read in the file until EOF
 				# load initial segment of file
 				# then loop until EOF is reached
@@ -107,6 +119,10 @@ def runClient(dest, port, gp, file):
 			s.shutdown(socket.SHUT_WR)
 			print "File was sent"
 
+			# store the HTTP response from the server
+			response = s.recv(1024)
+			print "Response received"
+
 		else:
 			print "Connection was broken"
 			s.shutdown(1)
@@ -119,10 +135,7 @@ def runClient(dest, port, gp, file):
 		s.close()
 		return
 
-	# receives response, string buffer size should be a low
-	# power of 2 for best results
-	response = s.recv(8192)
-	print "Response received"
+	#response = s.recv(8192)
 
 	# shutdown TCP 
 	print "Closing the connection...\n"
@@ -130,7 +143,7 @@ def runClient(dest, port, gp, file):
 	s.close()
 
 	print "\t**Reponse**\n"
-	print response
+	print response + "\n\n"
 	print 'Receive', repr(response)
 
 

@@ -56,7 +56,7 @@ def runServer(port):
 	# listens to the binded IP and port
 	# will queue 5 requests before refusing connections
 	server_socket.listen(5)
-	print "\nSimple HTTP server now running at %s on port %s..." % (HOST, PORT)
+	print "\nSimple HTTP server now running at %s on port %s...\n" % (HOST, PORT)
 
 	listening = True
 
@@ -67,7 +67,7 @@ def runServer(port):
 		# received request from client
 		# buffer size is small because simple requests are also small
 		request = client_connection.recv(1024)
-		print request
+		print request.rstrip()
 
 		# parse out the file name from the request
 		# removes a leading "/" if it exists
@@ -94,24 +94,31 @@ Hello World!
 """
 			# if the file exists, serve it to client
 			elif path.exists(file_name) and path.isfile(file_name):
-				file_str = ""
 				try:
-					# read line the requested file to send back to client
+					# read in the requested file to send back to client
 					with open(file_name, "r") as f:
-						file_data = f.readline()
-						file_str += file_data
-				# if an error occurs will reading in the file, return 404
+						# first send the http response
+						http_response = "HTTP/1.0 200 OK\n\n"
+						# send the response to the client
+						client_connection.send(http_response)
+
+						# read and send file data to client
+						file_data = f.read(1024)
+						while file_data:
+							print "Sending data..."
+							client_connection.send(file_data)
+							file_data = f.read(1024)
+
+				# if an error occurs will reading in the file, return 500
 				except:
-					http_response = "HTTP/1.0 404 NOT FOUND"
-				# no erorr occurs, file is read in successfully
-				else:
-					http_response = "HTTP/1.0 200 OK\n\n%s" % file_str
+					http_response = "HTTP/1.0 500 INTERNAL SERVER ERROR"
+					# send the response to the client
+					client_connection.sendall(http_response)
 
 			else:
 				http_response = "HTTP/1.0 404 NOT FOUND"
-
-			# send the response to the client
-			client_connection.sendall(http_response)
+				# send the response to the client
+				client_connection.sendall(http_response)
 
 		elif request[:3] == "PUT":
 			
