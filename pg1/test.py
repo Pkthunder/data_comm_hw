@@ -44,13 +44,13 @@ p1 = Process(target=runTest,
 	args=("python myclient.py www.google.com 80 GET / > log/client_test.log", 1))
 
 p2 = Process(target=runTest,
-	args=("python myserver.py %s > log/server_test.log" % server_port, 2))
+	args=("python myserver.py %s > log/server_test.log" % server_port, 2)) # TODO: Signal Handler?
 
 p3 = Process(target=runTest,
-	args=("python myclient.py 127.0.1.1 8888 GET / >> log/client_test.log", 3))
+	args=("python myclient.py 127.0.1.1 %s GET / >> log/client_test.log" % server_port, 3))
 
 p4 = Process(target=runTest,
-	args=("python myclient.py 127.0.1.1 8888 PUT temp.txt >> log/client_test.log", 4))
+	args=("python myclient.py 127.0.1.1 %s PUT temp.txt >> log/client_test.log" % server_port, 4))
 
 p1.start() # www.google 80 GET /
 sleep(1.5)

@@ -79,7 +79,7 @@ def runServer(port):
 			start = 5
 		# a slice of the request equal to the file's name
 		file_name = request[start:end]
-		print "file name: %s" % file_name
+		print "requested file name: %s" % file_name
 
 		# process statement
 		if request[:3] == "GET":
@@ -92,6 +92,9 @@ HTTP/1.0 200 OK
 
 Hello World!
 """
+				# send the response to the client
+				client_connection.send(http_response)
+
 			# if the file exists, serve it to client
 			elif path.exists(file_name) and path.isfile(file_name):
 				try:
@@ -109,7 +112,7 @@ Hello World!
 							client_connection.send(file_data)
 							file_data = f.read(1024)
 
-				# if an error occurs will reading in the file, return 500
+				# if an error occurs while reading in the file, return 500
 				except:
 					http_response = "HTTP/1.0 500 INTERNAL SERVER ERROR"
 					# send the response to the client
@@ -128,25 +131,36 @@ Hello World!
 			client_connection.sendall(http_response)
 
 			# open a file stream with the corresponding file name
-			with open("putdata/" + file_name, "w+") as f:
-				# writes data to the file as it is received
-				raw_data = client_connection.recv(1024)
-				while raw_data:
-					print "Receiving data..."
-					f.write(raw_data)
+			try:
+				with open("putdata/" + file_name, "w+") as f:
+					# writes data to the file as it is received
 					raw_data = client_connection.recv(1024)
+					while raw_data:
+						print "Receiving data..."
+						f.write(raw_data)
+						raw_data = client_connection.recv(1024)
 
-			# Once file is transferred completely
-			http_response = "HTTP/1.0 200 OK FILE CREATED"
-			client_connection.sendall(http_response)
+			# if an error occurs while save the file to the server, return 500
+			except:
+				http_response = "HTTP/1.0 500 INTERNAL SERVER ERROR"
+				# send the response to the client
+				client_connection.sendall(http_response)
+
+			# if no error occurs, return 200 OK
+			else:
+				# Once file is transferred completely
+				http_response = "HTTP/1.0 200 OK FILE CREATED"
+				client_connection.sendall(http_response)
 
 		else:
 			print "Error - Bad HTTP Verb"
 			return
 
 		# shutdown and close the connection
+		print "Closing connection..."
 		client_connection.shutdown(1)
 		client_connection.close()
+		print "\n*************************************\n"
 
 		# prevents continuous loop
 		# breaks loop after first request
