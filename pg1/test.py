@@ -2,6 +2,8 @@ import subprocess
 import socket
 from time import sleep
 from multiprocessing import Process
+import os
+import signal
 
 
 def runTest(test_cmd, test_index):
@@ -10,12 +12,27 @@ def runTest(test_cmd, test_index):
 	retry_count = 3
 	test = None
 
+	def sigint_handler(*args):
+		print "SIGINT received!"
+		test_complete = True
+		print "exiting test..."
+
+	signal.signal(signal.SIGINT,
+		sigint_handler)
+
 	print "\nRunning Test %s...\n" % str(test_index)
 
 	while not test_complete:
 		try:
 			print "Executing test..."
-			test = subprocess.check_output(test_cmd, shell=True)
+			# test = subprocess.check_output(test_cmd, shell=True)
+			cmd_list = test_cmd.split(" ")
+			fileno = len(cmd_list)-1
+			# print cmd_list
+			with open(cmd_list[fileno], "wb") as f:
+				test = subprocess.Popen(cmd_list, stdout=f,
+					stderr=subprocess.STDOUT, shell=True)
+				print test
 			break
 
 		except socket.timeout as e:
@@ -44,13 +61,16 @@ p1 = Process(target=runTest,
 	args=("python myclient.py www.google.com 80 GET / > log/client_test.log", 1))
 
 p2 = Process(target=runTest,
-	args=("python myserver.py %s > log/server_test.log" % server_port, 2)) # TODO: Signal Handler?
+	args=("python myserver.py %s > log/server_test.log" % server_port, 2))
 
 p3 = Process(target=runTest,
 	args=("python myclient.py 127.0.1.1 %s GET / >> log/client_test.log" % server_port, 3))
 
 p4 = Process(target=runTest,
 	args=("python myclient.py 127.0.1.1 %s PUT temp.txt >> log/client_test.log" % server_port, 4))
+
+p5 = Process(target=runTest,
+	args=("python myclient.py 127.0.1.1 %s GET temp.txt >> log/client_test.log" % server_port, 5))
 
 p1.start() # www.google 80 GET /
 sleep(1.5)
@@ -59,23 +79,22 @@ sleep(1.5)
 p3.start() # 127.0.1.1 8888 GET /
 sleep(1.5)
 p4.start() # 127.0.1.1 8888 PUT temp.txt
+sleep(1.5)
+p5.start() # 127.0.1.1 8888 GET putdata/temp.txt
 
 # join all processes to main thread
 p1.join()
-p2.join(5.0)
+p2.join()
 p3.join()
 p4.join()
+p5.join()
 
-# terminate test 2, which runs the server in a infinite loop
-sleep(1.5)
-p2.terminate()
-print p2.is_alive()
-print p2.exitcode
+sleep(2.0)
+subprocess.call("reset", shell=True)
 sleep(1.0)
-p2.terminate()
-print p2.is_alive()
-print p2.exitcode
-# while p2.is_alive():
-# 	print p2.is_alive()
-# 	p2.terminate()
-# 	p2.exitcode
+print "test.py has completed running!"
+
+# sleep(1.5)
+# print "Killing server..."
+# print p2.pid, p2.is_alive()
+# os.kill(p2.pid, signal.SIGINT)

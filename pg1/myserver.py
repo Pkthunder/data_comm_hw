@@ -8,7 +8,6 @@ import sys # module used for "argv" functionality
 import re # regex module for input validation
 from os import path # helper module for modifying path and file names
 
-
 def fromTerminal():
 	""" 
 	helper function responsible for passing command
