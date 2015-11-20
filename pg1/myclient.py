@@ -144,7 +144,7 @@ def runClient(dest, port, gp, file):
 
 	print "\t**Reponse**\n"
 	print response + "\n\n"
-	print 'Receive', repr(response)
+	#print 'Receive', repr(response)
 
 
 # defaults to terminal args, for calls

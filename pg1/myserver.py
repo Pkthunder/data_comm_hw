@@ -92,6 +92,9 @@ HTTP/1.0 200 OK
 
 Hello World!
 """
+				# send the response to the client
+				client_connection.send(http_response)
+
 			# if the file exists, serve it to client
 			elif path.exists(file_name) and path.isfile(file_name):
 				try:
