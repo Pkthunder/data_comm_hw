@@ -1,0 +1,30 @@
+﻿First test: “python myclient.py www.google.com 80 GET /”
+
+I believe this test is a success because it retrieves a “200 OK” response and an entire HTML document.
+
+
+Second test: “python myclient.py 127.0.1.1 8888 GET /”
+AND
+			“python myserver.py 8888
+
+This test is suppose to send a request to the server and return “Hello World” to the client.
+
+
+
+
+
+
+Third test: “python myclient.py 127.0.1.1 8888 GET putdata/temp.txt”
+AND
+			“python myserver.py 8888
+
+This test proves the path resolution functions correctly and the server can process a GET request and send a file to the client
+
+
+Fourth test: “python myclient.py 127.0.1.1 8888 PUT temp.txt”
+AND
+			“python myserver.py 8888
+
+This test proves the PUT request can transfer a file to the server. The putdata/temp.txt file is removed before this test is executed to prove it works correctly
+
+

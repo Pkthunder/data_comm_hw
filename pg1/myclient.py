@@ -142,14 +142,9 @@ def runClient(dest, port, gp, file):
 	s.close()
 
 	print "\t**Reponse**\n"
-<<<<<<< HEAD
-	print response + "\n\n"
-	#print 'Receive', repr(response)
-=======
 	print response.strip()
 	#print 'Raw Data Received', repr(response)
 	print "\n*************************************\n"
->>>>>>> 1659c6214e0b6343a7b04a16bba1bbf8905876a2
 
 
 # defaults to terminal args, for calls
