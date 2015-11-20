@@ -46,12 +46,9 @@ def fromTerminal():
 def runClient(dest, port, gp, file):
 	""" 
 	A simple HTTP 1.0 client 
-	How to call from command line:
-	python myclient.py host|url port_number GET|PUT file_name
 	"""
 
 	CRLF = "\r\n\r\n"
-	# dest, port_num = sys.argv[1], sys.argv[2]
 	# tuple containing GET|PUT and file_name
 	# path.basename returns the file name of a path
 	params = (gp, file) # default value
@@ -72,7 +69,7 @@ def runClient(dest, port, gp, file):
 	# the connection() method is subject to the timeout settings
 	s.settimeout(0.80)
 
-	# a flag to instruct the kernel to reuse a local socket
+	# a flag to instruct the kernel to reuse the local socket
 	s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 
 	# establish TCP connection with dest at port 80 (HTTP default)
@@ -89,6 +86,9 @@ def runClient(dest, port, gp, file):
 	# run GET or PUT specific code
 	if gp == "GET":
 
+		# place all segments into a string buffer
+		# then save the segments into memory
+		# until EOF is reached
 		temp = s.recv(1024)
 		while temp:
 			response += temp
@@ -135,7 +135,6 @@ def runClient(dest, port, gp, file):
 		s.close()
 		return
 
-	#response = s.recv(8192)
 
 	# shutdown TCP 
 	print "Closing the connection...\n"
@@ -143,8 +142,14 @@ def runClient(dest, port, gp, file):
 	s.close()
 
 	print "\t**Reponse**\n"
+<<<<<<< HEAD
 	print response + "\n\n"
 	#print 'Receive', repr(response)
+=======
+	print response.strip()
+	#print 'Raw Data Received', repr(response)
+	print "\n*************************************\n"
+>>>>>>> 1659c6214e0b6343a7b04a16bba1bbf8905876a2
 
 
 # defaults to terminal args, for calls
